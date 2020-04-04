@@ -287,7 +287,12 @@ class Names
   }
 
 
-  private function appendNamesToXML(DOMDocument $dom)
+  /**
+   * @param  DOMDocument  $dom
+   *
+   * @return void
+   */
+  private function appendNamesToXML(DOMDocument $dom): void
   {
     $names = $dom->documentElement->getElementsByTagName("names")->item(0);
     foreach ($this->names as $name) {

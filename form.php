@@ -58,7 +58,9 @@ use app\Services\Yandex;
                                         <?php for ($i = 0; $i < $typeData["count"]; $i++): ?>
                                             <li>
                                                 <label>
-                                                    <input name="names[<?= $slug ?>][]" type="text">
+                                                    <input name="names[<?= $slug ?>][]"
+                                                           data-cost="<?= $typeData["cost"] ?>"
+                                                           type="text"<?= ($typeData["foreach"]) ? " data-foreach='{$slug}'" : "" ?>>
                                                 </label>
                                             </li>
                                         <?php endfor; ?>
@@ -79,11 +81,11 @@ use app\Services\Yandex;
                         $('.customerName<?= $n ?>').on('input', function () {
                             var disabled = $(this).val().length === 0;
                             $('.btn-submit<?= $n ?>').prop('disabled', disabled);
-                        })
+                        });
                     </script>
 
                     <div>
-                        <input type="submit" value="Отправить" class="btn-submit btn-submit<?= $n ?>" disabled>
+                        <input type="submit" value="Оплатить <?= $typeData["cost"] ?>" class="btn-submit btn-submit<?= $n ?>" disabled>
                     </div>
 
                 </form>
@@ -93,3 +95,14 @@ use app\Services\Yandex;
     </div>
 </div>
 
+<script>
+    $("[data-foreach]").on('change', function () {
+        var slug = $(this).data('foreach');
+        var cost = $(this).data('cost');
+        var count = $("[data-foreach='" + slug + "']").filter(function () {
+            return !!$(this).val();
+        }).length;
+        var total = ((count <= 1) ? cost : (cost * count));
+        $(this).parents("form").eq(0).find("input[type='submit']").val("Оплатить " + total)
+    });
+</script>
