@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'CyrillicOld';
+    font-style: normal;
+    font-weight: 700;
+    src: local('CyrillicOld'), local('CyrillicOld-Bold'),
+    url(../fonts/cyrillicold_59ab5d221e898731dece84f7b2fe9816.woff) format('woff'),
+    url(../fonts/cyrillicold_59ab5d221e898731dece84f7b2fe9816.ttf) format('truetype');
+}
