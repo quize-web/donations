@@ -4,6 +4,8 @@ namespace app\Services;
 
 use XMLWriter;
 use app\Core\XML;
+use XMLReader;
+use DOMDocument;
 
 
 class Names
@@ -120,8 +122,8 @@ class Names
       $this->timestamp = time();
       $this->customerName = $customerName;
       $this->orderType = key($names);
-      $this->names = self::handleNames(current($names));
 
+      $this->setNames(current($names));
       $this->setValid();
       $this->setTotal();
 
@@ -143,29 +145,39 @@ class Names
   {
     if ($this->valid) {
       $fileFullPath = $this->makeFileFullPath("new");
-      $XML = new XML($fileFullPath, function (XMLWriter $writer) {
+      $XML = new XML($fileFullPath);
+      $XML->write(function (XMLWriter $writer) {
 
-        $writer->writeElement("timestamp", $this->orderType);
+        $writer->writeElement("orderType", $this->orderType);
         $writer->writeElement("timestamp", $this->timestamp);
         $writer->writeElement("payed", "false");
         $writer->writeElement("total", $this->getTotal());
 
-        $writer->startElement("names");
-        if ($this->names) {
-          foreach ($this->names as $name) {
-            $writer->writeElement("name", $name);
-          }
-        }
-        $writer->endElement();
+        $this->writeNames($writer);
 
       });
     }
   }
 
 
-  public function markAsPayed()
+  /**
+   * @return void
+   */
+  public function markAsPayed(): void
   {
-    //
+    $orderFileFullPath = $this->makeFileFullPath("new");
+    if (file_exists($orderFileFullPath)) { # файл заказа существует в папке с неоплаченными записками
+
+      # считываем с него данные в свойства класса
+      $this->retrieveFromXML($orderFileFullPath);
+
+      # модифицируем существующи файл
+      $this->appendNamesToMainFile();
+
+      # переносим файл записки в архив
+      $this->moveToArchive($orderFileFullPath);
+
+    }
   }
 
 
@@ -231,12 +243,124 @@ class Names
 
 
   /**
+   * @param  null|integer  $total
+   *
    * @return void
    */
-  private function setTotal(): void
+  private function setTotal(?int $total = null): void
   {
-    $this->total = self::TYPES[$this->orderType]["cost"];
-    if (self::TYPES[$this->orderType]["foreach"]) $this->total *= count($this->names);
+    if ($total) $this->total = $total;
+    else {
+
+      $this->total = self::TYPES[$this->orderType]["cost"];
+      if (self::TYPES[$this->orderType]["foreach"]) $this->total *= count($this->names);
+
+    }
+  }
+
+
+  /**
+   * @param  array  $names
+   *
+   * @return void
+   */
+  private function setNames(array $names): void
+  {
+    $this->names = self::handleNames($names);
+  }
+
+
+  /**
+   * @param  XMLWriter  $writer
+   *
+   * @return void
+   */
+  private function writeNamesToXML(XMLWriter $writer): void
+  {
+    $writer->startElement("names");
+    if ($this->names) {
+      foreach ($this->names as $name) {
+        $writer->writeElement("name", $name);
+      }
+    }
+    $writer->endElement();
+  }
+
+
+  private function appendNamesToXML(DOMDocument $dom)
+  {
+    $names = $dom->documentElement->getElementsByTagName("names")->item(0);
+    foreach ($this->names as $name) {
+      $node = $dom->createElement("name", $name);
+      $names->appendChild($node);
+    }
+  }
+
+
+  /**
+   * @param  string  $orderFileFullPath
+   *
+   * @return void
+   */
+  private function moveToArchive(string $orderFileFullPath): void
+  {
+    # формируем путь до директории
+    $archiveFullPath = (self::makeFullPath("archive") . $this->getArchiveFolder() . DS);
+    if (file_exists($archiveFullPath) === false) mkdir($archiveFullPath, 0777, true);
+
+    # формируем полный путь до файла и выполняем перенос
+    $archiveFileFullPath = ($archiveFullPath . $this->fileName . ".xml");
+    rename($orderFileFullPath, $archiveFileFullPath);
+  }
+
+
+  /**
+   * Вставляем список имен в общий файл
+   *
+   * @return void
+   */
+  private function appendNamesToMainFile(): void
+  {
+    $fullPath = self::makeFullPath("payed"); # директория файла
+    $mainFileFullPath = ($fullPath . $this->orderType . ".xml"); # полный путь до файла
+    if (file_exists($mainFileFullPath)) {
+      # главный файл с записками существует - модифицируем его
+
+      $XML = new XML($mainFileFullPath);
+      $XML->modify(function (DOMDocument $dom) {
+        $this->appendNamesToXML($dom);
+      });
+
+    } else {
+      # главный файл с записками НЕ существует - создаем его
+
+      $XML = new XML($mainFileFullPath);
+      $XML->write(function (XMLWriter $writer) {
+        $this->writeNamesToXML($writer);
+      });
+
+    }
+  }
+
+
+  /**
+   * Извлекаем данные о записке в свойства класса
+   *
+   * @param  string  $orderFileFullPath
+   *
+   * @return void
+   */
+  private function retrieveFromXML(string $orderFileFullPath): void
+  {
+    $XML = simplexml_load_file($orderFileFullPath);
+
+    $this->orderType = (string)$XML->orderType;
+    $this->timestamp = (string)$XML->timestamp;
+
+    $this->setNames((array)current($XML->names));
+    $this->setTotal((int)$XML->total);
+
+    unset($XML);
   }
 
 
@@ -249,6 +373,12 @@ class Names
   {
     $path = implode(DS, [self::FOLDERS["root"], self::FOLDERS["types"][$type]]);
     return (DOCROOT . DS . "storage" . DS . $path . DS);
+  }
+
+
+  private function getArchiveFolder()
+  {
+    return (date('Y-m-d') . DS . $this->orderType);
   }
 
 

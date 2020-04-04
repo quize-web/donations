@@ -22,8 +22,7 @@ use app\Services\Yandex;
 
     <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left" role="navigation">
         <?php foreach (Names::TYPES as $slug => $typeData): ?>
-            <li clas
-                s="nav-item">
+            <li class="nav-item">
                 <a href="#<?= $slug ?>" class="nav-link<?= (Names::DEFAULT === $slug) ? " active" : "" ?>" data-toggle="tab" role="tab" aria-controls="lorem"><?= $typeData["title"] ?></a>
             </li>
         <?php endforeach; ?>
