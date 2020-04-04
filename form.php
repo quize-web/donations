@@ -1,9 +1,12 @@
 <?php
+require_once ("./_common.php");
+
 $shopId = '25634';
 $scid = '33560';
-$form_action = 'https://money.yandex.ru/eshop.xml';
+//$form_action = 'https://money.yandex.ru/eshop.xml';
+$form_action = '/handler.php';
 
-$froms = [
+$types = [
     (object)[
         'id' => 'ozdravii',
         'title' => 'О здравии',
@@ -50,71 +53,60 @@ $froms = [
 
 
 <div class="d-flex flex-row mt-2" style="max-width: 99%;">
+
     <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left" role="navigation">
-        <? foreach ($froms as $form): ?>
-            <li class="nav-item">
+        <?php foreach ($types as $form): ?>
+            <li clas
+                s="nav-item">
                 <a href="#<?= $form->id ?>" class="nav-link <?= $form->active ? 'active' : '' ?>" data-toggle="tab" role="tab" aria-controls="lorem"><?= $form->title ?></a>
             </li>
-        <? endforeach; ?>
+        <?php endforeach; ?>
     </ul>
+
     <div class="tab-content">
-        <? foreach ($froms as $id => $form): ?>
+        <?php foreach ($types as $id => $form): ?>
             <div class="tab-pane fade show <?= $form->active ? 'active' : '' ?>" id="<?= $form->id ?>" role="tabpanel">
                 <form action="<?= $form_action ?>" method="post" target="_blank">
+
                     <input name="shopId" value="<?= $shopId ?>" type="hidden" required/>
                     <input name="scid" value="<?= $scid ?>" type="hidden" required/>
-                    <? if ($form->id === 'pojertvovat'): ?>
-                    <label>
-                        Сумма пожертвования
-                        <input name="sum" class='customerSum' value="" min="1" type="number" required>
-                    </label>
-                    <? else:?>
-                        <input name="sum" value="<?= $form->cost ?>" min="1" id='customerSum<?=$id?>' type="hidden" required>
-                    <? endif;?>
-                    <textarea name="orderDetails" id="orderDetails<?=$id?>" wrap="soft" style="display: none"></textarea>
 
-                    <? if ($form->id !== 'pojertvovat'): ?>
-                    <div class="order-info">
-                        <div class="order-info-title"><?= $form->title ?></div>
-                        <div class="order-info-body">
-                            <div class="order-info-body-list-wrapp">
-                                <ol>
-                                    <? for ($i = 0; $i < $form->count; $i++): ?>
-                                    <li><input class="name<?= $id ?>"></li>
-                                    <? endfor; ?>
-                                </ol>
+                    <? if ($form->id === 'pojertvovat'): ?>
+                        <label>
+                            Сумма пожертвования
+                            <input name="sum" class="customerSum" value="" min="1" type="number" required>
+                        </label>
+                    <? else:?>
+                        <input name="sum" value="<?= $form->cost ?>" min="1" id="customerSum<?= $id ?>" type="hidden" required>
+                    <? endif;?>
+
+                    <?php if ($form->id !== 'pojertvovat'): ?>
+
+                        <div class="order-info">
+                            <div class="order-info-title"><?= $form->title ?></div>
+                            <div class="order-info-body">
+                                <div class="order-info-body-list-wrapp">
+                                    <ol>
+                                        <?php for ($i = 0; $i < $form->count; $i++): ?>
+                                            <li><input name="names[<?= $id ?>][]"></li>
+                                        <?php endfor; ?>
+                                    </ol>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <script>
-                        $('.name<?= $id ?>').on('change', function () {
-                            var names = [];
-                            var sum = 0;
-                            $('.name<?= $id ?>').each(function() {
-                                if ($(this).val()) {
-                                    names.push($(this).val())
-                                    sum += <?= $form->cost ?>
-                                }
-                            })
-                            $('#orderDetails<?= $id ?>').val('<?= $form->title?>: ' + names.join(', '));
-                            <? if ($form->multiplies): ?>
-                            $('#customerSum<?=$id?>').val(sum);
-                            <? endif; ?>
-                        })
-                    </script>
-
-                    <? endif; ?>
+                    <?php endif; ?>
 
                     <div style="margin-top: 10px">
                         <label>Как к вам обращаться?
-                            <input required name="customerNumber" class="customerNumber customerNumber<?= $id ?>" value="" size="64"/>
+                            <input required name="customer-name" class="customerName customerName<?= $id ?>" value="" size="64"/>
                         </label>
                     </div>
 
                     <script>
-                        $('.customerNumber<?= $id ?>').on('change', function () {
-                            $('.btn-submit<?= $id ?>').prop('disabled', !$(this).val());
+                        $('.customerName<?= $id ?>').on('input', function () {
+                            var disabled = $(this).val().length === 0;
+                            $('.btn-submit<?= $id ?>').prop('disabled', disabled);
                         })
                     </script>
 
@@ -122,10 +114,9 @@ $froms = [
                         <input type="submit" value="Отправить" class="btn-submit btn-submit<?= $id ?>" disabled>
                     </div>
 
-
                 </form>
             </div>
-        <? endforeach; ?>
+        <?php endforeach; ?>
     </div>
 </div>
 
