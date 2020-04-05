@@ -28,7 +28,7 @@ class cURL
    *
    * @return void
    */
-  function __construct(string $endpoint)
+  function __construct($endpoint)
   {
     $this->endpoint = $endpoint;
   }
@@ -40,7 +40,7 @@ class cURL
    *
    * @return string|boolean
    */
-  public function sendAsPost(array $data, ?string $endpoint = null)
+  public function sendAsPost($data, $endpoint = null)
   {
     if ($endpoint) $endpoint = $this->endpoint;
 

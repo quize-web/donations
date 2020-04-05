@@ -17,9 +17,9 @@ class Names
 
 
   /**
-   * @var string DEFAULT
+   * @var string ACTIVE_TAB
    */
-  const DEFAULT = "health";
+  const ACTIVE_TAB = "health";
 
   /**
    * @var array TYPES
@@ -130,7 +130,7 @@ class Names
    * @param  string      $customerName
    * @param  null|array  $names
    */
-  function __construct(string $customerName, ?array $names = null)
+  function __construct($customerName, $names = null)
   {
     if ($names) { # создаем новую записку
 
@@ -156,7 +156,7 @@ class Names
   /**
    * @return void
    */
-  public function createNew(): void
+  public function createNew()
   {
     if ($this->valid) {
       $fileFullPath = $this->makeFileFullPath("new");
@@ -178,7 +178,7 @@ class Names
   /**
    * @return void
    */
-  public function markAsPayed(): void
+  public function markAsPayed()
   {
     $orderFileFullPath = $this->makeFileFullPath("new");
     if (file_exists($orderFileFullPath)) { # записка существует в папке с неоплаченными записками
@@ -201,7 +201,7 @@ class Names
   /**
    * @param  string  $type
    */
-  public static function moveMainFileToArchive(string $type): void
+  public static function moveMainFileToArchive($type)
   {
     $mainFileFullPath = self::getMainFileFullPath($type);
     self::moveToArchive($mainFileFullPath, $type, time());
@@ -211,7 +211,7 @@ class Names
   /**
    * @return integer
    */
-  public function getTotal(): int
+  public function getTotal()
   {
     return $this->total;
   }
@@ -220,7 +220,7 @@ class Names
   /**
    * @return null|string
    */
-  public function getFileName(): ?string
+  public function getFileName()
   {
     return $this->fileName;
   }
@@ -229,7 +229,7 @@ class Names
   /**
    * @return null|string
    */
-  public function getAsString(): ?string
+  public function getAsString()
   {
     if ($this->string === null) {
       $this->string = (self::TYPES[$this->orderType]["title"] . ": " . implode(", ", $this->names));
@@ -241,7 +241,7 @@ class Names
   /**
    * @return array
    */
-  public static function getNames(): array
+  public static function getNames()
   {
     $result = [];
     $mainFiles = self::getMainFiles();
@@ -274,7 +274,7 @@ class Names
    *
    * @return integer|string
    */
-  public static function getEndDate(int $createdAt, bool $format = false)
+  public static function getEndDate($createdAt, $format = false)
   {
     $endData = ($createdAt + self::FORTY);
     return ($format ? date('d.m.Y', $endData) : $endData);
@@ -287,7 +287,7 @@ class Names
   /**
    * @return void
    */
-  private function setValid(): void
+  private function setValid()
   {
     if (empty($this->names) || (array_key_exists($this->orderType, self::TYPES) === false)) {
       # если пустые имена или такого типа записок нет - ошибка
@@ -301,7 +301,7 @@ class Names
    *
    * @return string
    */
-  private function makeFileFullPath(string $type): string
+  private function makeFileFullPath($type)
   {
     if ($this->fileName === null) { # формируем хеш файла (при новой записке)
       $salt = ($this->customerName . $this->orderType . $this->timestamp);
@@ -317,7 +317,7 @@ class Names
    *
    * @return void
    */
-  private function setTotal(?int $total = null): void
+  private function setTotal($total = null)
   {
     if ($total) $this->total = $total;
     else {
@@ -334,7 +334,7 @@ class Names
    *
    * @return void
    */
-  private function setNames(array $names): void
+  private function setNames($names)
   {
     $this->names = self::handleNames($names);
   }
@@ -347,7 +347,7 @@ class Names
    *
    * @return void
    */
-  private static function writeNamesToXML(XMLWriter $writer, array $names, $withDate = false): void
+  private static function writeNamesToXML(XMLWriter $writer, $names, $withDate = false)
   {
     $writer->startElement("names");
     if ($names) {
@@ -374,7 +374,7 @@ class Names
    *
    * @return void
    */
-  private static function createNamesXML(string $fileFullPath, $withDate = false, ?array $names = null): void
+  private static function createNamesXML($fileFullPath, $withDate = false, $names = null)
   {
     $XML = new XML($fileFullPath);
     $XML->write(function (XMLWriter $writer) use ($withDate, $names) {
@@ -390,10 +390,10 @@ class Names
    *
    * @return void
    */
-  private function appendNamesToXML(DOMDocument $dom, $withDate = false, ?array $names = null): void
+  private function appendNamesToXML(DOMDocument $dom, $withDate = false, $names = null)
   {
     $namesNode = $dom->documentElement->getElementsByTagName("names")->item(0);
-    $names = ($names ?? $this->names);
+    $names = (($names === null) ? $this->names : $names);
     if ($names) {
       foreach ($names as $name) {
 
@@ -419,7 +419,7 @@ class Names
    *
    * @return void
    */
-  private static function moveToArchive(string $sourceFileFullPath, string $orderType, string $archiveFileName): void
+  private static function moveToArchive($sourceFileFullPath, $orderType, $archiveFileName)
   {
     # формируем полный путь до файла и выполняем перенос
     $archiveFileFullPath = self::makeArchiveFileFullPath($orderType, $archiveFileName);
@@ -435,9 +435,9 @@ class Names
    *
    * @return void
    */
-  private function appendNamesToFile(string $fileFullPath, ?array $names = null): void
+  private function appendNamesToFile($fileFullPath, $names = null)
   {
-    $names = ($names ?? $this->names);
+    $names = (($names === null) ? $this->names : $names);
     $withDate = ($this->orderType === 'forty'); # пишем дополнительно дату добавления каждого имени (для Сорокоуста)
     if (file_exists($fileFullPath)) {
 
@@ -463,7 +463,7 @@ class Names
    *
    * @return void
    */
-  private function retrieveFromXML(string $orderFileFullPath): void
+  private function retrieveFromXML($orderFileFullPath)
   {
     $XML = simplexml_load_file($orderFileFullPath);
 
@@ -482,7 +482,7 @@ class Names
    *
    * @return string
    */
-  private static function getMainFileFullPath(string $orderType): string
+  private static function getMainFileFullPath($orderType)
   {
     $fullPath = self::makeFullPath("payed"); # директория файла
     return ($fullPath . $orderType . ".xml"); # полный путь до файла
@@ -494,7 +494,7 @@ class Names
    *
    * @return string
    */
-  private static function makeFullPath(string $type): string
+  private static function makeFullPath($type)
   {
     $path = implode(DS, [self::FOLDERS["root"], self::FOLDERS["types"][$type]]);
     return (DOCROOT . DS . "storage" . DS . $path . DS);
@@ -506,7 +506,7 @@ class Names
    *
    * @return string
    */
-  private static function makeArchiveFullPath(string $orderType): string
+  private static function makeArchiveFullPath($orderType)
   {
     $archivePath = (date('Y-m-d') . DS . $orderType);
     $archiveFullPath = (self::makeFullPath("archive") . $archivePath . DS);
@@ -521,7 +521,7 @@ class Names
    *
    * @return array
    */
-  private static function handleNames(array $names): array
+  private static function handleNames($names)
   {
     return array_filter($names);
   }
@@ -530,7 +530,7 @@ class Names
   /**
    * @return array
    */
-  private static function getMainFiles(): array
+  private static function getMainFiles()
   {
     $fullPath = self::makeFullPath("payed");
     return array_filter(glob($fullPath . "*.xml"));
@@ -543,7 +543,7 @@ class Names
    *
    * @return array
    */
-  private static function filterNamesXML(DOMNodeList $namesNode, string $type): array
+  private static function filterNamesXML(DOMNodeList $namesNode, $type)
   {
     $result = [];
     $archiveNodes = [];
@@ -590,7 +590,7 @@ class Names
    *
    * @return boolean
    */
-  private static function isExpired(int $createdAt): bool
+  private static function isExpired($createdAt)
   {
     return (time() > self::getEndDate($createdAt));
   }
@@ -602,7 +602,7 @@ class Names
    *
    * @return string
    */
-  private static function makeArchiveFileFullPath(string $type, string $name)
+  private static function makeArchiveFileFullPath($type, $name)
   {
     $archiveFolderFullPath = self::makeArchiveFullPath($type); # формируем путь до директории
     return ($archiveFolderFullPath . $name . ".xml"); # формируем полный путь до файла

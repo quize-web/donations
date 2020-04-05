@@ -82,7 +82,13 @@ class Yandex
   /* METHODS */
 
 
-  function __construct(array $data, ?Names $names = null)
+  /**
+   * Yandex constructor.
+   *
+   * @param  array       $data
+   * @param  Names|null  $names
+   */
+  function __construct($data, $names = null)
   {
     $this->rawData = $data;
     $this->names = $names;
@@ -99,7 +105,7 @@ class Yandex
    *
    * @return integer|null
    */
-  public static function getShopID(): int
+  public static function getShopID()
   {
     if (self::$shopID === null) {
       if (isset($_GET["shop-id"]) && $_GET["shop-id"]) self::$shopID = $_GET["shop-id"];
@@ -115,7 +121,7 @@ class Yandex
    *
    * @return integer|null
    */
-  public static function getSCID(): int
+  public static function getSCID()
   {
     if (self::$scid === null) {
       if (isset($_GET["scid"]) && $_GET["scid"]) self::$scid = $_GET["scid"];
@@ -128,7 +134,7 @@ class Yandex
   /**
    * @return array
    */
-  public function getData(): array
+  public function getData()
   {
     return $this->data;
   }
@@ -140,7 +146,7 @@ class Yandex
   /**
    * @return void
    */
-  private function setData(): void
+  private function setData()
   {
     $result = [
       "shopId" => Yandex::getShopID(),
@@ -169,11 +175,11 @@ class Yandex
 
 
   /**
-   * @param  string $orderNumber
+   * @param  string  $orderNumber
    *
    * @return string
    */
-  private static function getSuccessURL(string $orderNumber): string
+  private static function getSuccessURL($orderNumber)
   {
     return (env('HOST') . "/" . self::SUCCESS . "?orderNumber={$orderNumber}");
   }
@@ -182,7 +188,7 @@ class Yandex
   /**
    * @return string
    */
-  private static function getFailURL(): string
+  private static function getFailURL()
   {
     return env('HOST');
   }
@@ -191,7 +197,7 @@ class Yandex
   /**
    * @return string
    */
-  private static function getDefaultURL(): string
+  private static function getDefaultURL()
   {
     return env('HOST');
   }

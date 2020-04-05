@@ -10,7 +10,7 @@ class Loader
   /**
    * @return void
    */
-  public static function init(): void
+  public static function init()
   {
     spl_autoload_register([Loader::class, "register"], true);
   }
@@ -20,7 +20,7 @@ class Loader
    * @param  string  $class
    * @return void
    */
-  private static function register(string $class): void
+  private static function register($class)
   {
     $path = explode("\\", $class);
     $fullPath = (DOCROOT . DS . implode(DS, $path) . ".php");

@@ -16,7 +16,7 @@ class Env
   /**
    * @return void
    */
-  public static function read(): void
+  public static function read()
   {
     $envFileFullPath = (DOCROOT . DS . ".env");
     if (file_exists($envFileFullPath) && is_null(self::$data)) {
@@ -27,7 +27,7 @@ class Env
         if ($row == '') continue;
         if (substr($row, 0, 1) == "#") continue;
 
-        [$key, $value] = explode("=", $row, 2);
+        list($key, $value) = explode("=", $row, 2);
 
         if ($value === "") continue;
         if (strtolower($value) === "true") $value = true;
@@ -46,7 +46,7 @@ class Env
    *
    * @return mixed
    */
-  public static function get(string $key, $default = false)
+  public static function get($key, $default = false)
   {
     if (is_null(self::$data)) self::read();
 
@@ -63,7 +63,7 @@ class Env
    *
    * @return mixed
    */
-  function __get(string $key)
+  function __get($key)
   {
     return self::get($key);
   }
@@ -73,7 +73,7 @@ class Env
    * @param  string  $key
    * @param  string  $value
    */
-  function __set(string $key, string $value): void
+  function __set($key, $value)
   {
     # ...
   }

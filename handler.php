@@ -16,7 +16,7 @@ if ($data):
     $names->createNew();
   }
 
-  $yandex = new Yandex($data, ($names ?? null));
+  $yandex = new Yandex($data, (($names === null) ? null : $names));
 
   $endpoint = Yandex::ENDPOINT;
   if ((Yandex::ENDPOINT === "/callback.php") && $names) {

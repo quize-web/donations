@@ -26,7 +26,7 @@ class XML
   private $fileFullPath = null;
 
 
-  function __construct(string $fileFullPath)
+  function __construct($fileFullPath)
   {
     $this->fileFullPath = $fileFullPath;
   }
@@ -37,7 +37,7 @@ class XML
    *
    * @return void
    */
-  function write(callable $callback): void
+  function write($callback)
   {
     $this->writer = new XMLWriter();
     $this->writer->openURI("file://" . $this->fileFullPath);
@@ -53,13 +53,19 @@ class XML
   }
 
 
+  /**
+   * @return void
+   */
   function read()
   {
     //
   }
 
 
-  function modify(callable $callback)
+  /**
+   * @param  callable  $callback
+   */
+  function modify($callback)
   {
     $this->dom = new DOMDocument();
     $this->dom->load($this->fileFullPath);
