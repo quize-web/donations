@@ -1,5 +1,3 @@
-
-
 .order-info{
     display: inline-block;
     width: 315px;
@@ -156,4 +154,51 @@ a {
     .nav-tabs {
         border: 0 !important;
     }
+}
+
+.printable {
+    font-family: 'CyrillicOld', arial;
+}
+
+.printable .container {
+    margin-top: 20px;
+}
+
+.printable button {
+    /*background: none;*/
+    /*border: 1px solid;*/
+}
+
+.printable a {
+    color: inherit !important;
+}
+
+.names__list {
+    font-size: 16px;
+}
+
+.names__title {
+    display: flex;
+    align-items: center;
+}
+
+.names__title-addition {
+    margin: 0;
+    margin-left: 10px;
+}
+
+.names__title-addition button {
+    padding: 0 20px;
+}
+
+.printable__button button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px 50px;
+}
+
+.names__list-item-description {
+    font-size: 10px;
+    margin-left: 10px;
 }

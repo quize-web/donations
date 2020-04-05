@@ -66,6 +66,12 @@ class Names
 
 
   /**
+   * @var string AUTH_HASH
+   */
+  const AUTH_HASH = "password";
+
+
+  /**
    * 40 дней
    *
    * @var integer FORTY
@@ -249,6 +255,19 @@ class Names
       }
     }
     return $result;
+  }
+
+
+  /**
+   * @param  integer  $createdAt
+   * @param  boolean  $format
+   *
+   * @return integer|string
+   */
+  public static function getEndDate(int $createdAt, bool $format = false)
+  {
+    $endData = ($createdAt + self::FORTY);
+    return ($format ? date('d.m.Y', $endData) : $endData);
   }
 
 
@@ -555,19 +574,6 @@ class Names
     #
 
     return $result;
-  }
-
-
-  /**
-   * @param  integer  $createdAt
-   * @param  boolean  $format
-   *
-   * @return integer|string
-   */
-  private static function getEndDate(int $createdAt, bool $format = false)
-  {
-    $endData = ($createdAt + self::FORTY);
-    return ($format ? date('Y-m-d', $endData) : $endData);
   }
 
 

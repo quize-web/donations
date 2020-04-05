@@ -1,0 +1,3 @@
+.printable__button, button {
+    display: none !important;
+}
