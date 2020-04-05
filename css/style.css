@@ -175,11 +175,17 @@ a {
 
 .names__list {
     font-size: 16px;
+    padding-left: 1.5rem;
+}
+
+.names__list li {
+    margin-bottom: 0.4rem;
 }
 
 .names__title {
     display: flex;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .names__title-addition {
@@ -191,11 +197,19 @@ a {
     padding: 0 20px;
 }
 
+p.names__title-addition {
+    font-size: 10px;
+}
+
 .printable__button button {
-    position: absolute;
+    position: fixed;
     right: 0;
-    top: 0;
+    bottom: 0;
     padding: 5px 50px;
+    z-index: 5;
+    background-color: #c10000;
+    border-color: #c10000;
+    border-radius: 0;
 }
 
 .names__list-item-description {

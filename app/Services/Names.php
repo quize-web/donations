@@ -26,7 +26,7 @@ class Names
    */
   const TYPES = [
     "health" => [
-      "title" => "О здравии",
+      "title" => "О Здравии",
       "count" => 10,
       "cost" => 180,
       "foreach" => false
