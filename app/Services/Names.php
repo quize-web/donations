@@ -187,7 +187,7 @@ class Names
       $this->retrieveFromXML($orderFileFullPath);
 
       # модифицируем существующи файл
-      $mainFileFullPath = $this->getMainFileFullPath();
+      $mainFileFullPath = self::getMainFileFullPath($this->orderType);
       $this->appendNamesToFile($mainFileFullPath);
 
       # переносим файл записки в архив
@@ -195,6 +195,16 @@ class Names
 //      exit(); # отладка
 
     }
+  }
+
+
+  /**
+   * @param  string  $type
+   */
+  public static function moveMainFileToArchive(string $type): void
+  {
+    $mainFileFullPath = self::getMainFileFullPath($type);
+    self::moveToArchive($mainFileFullPath, $type, time());
   }
 
 
@@ -403,20 +413,17 @@ class Names
 
 
   /**
-   * @param  string  $orderFileFullPath
+   * @param  string  $sourceFileFullPath
    * @param  string  $orderType
    * @param  string  $archiveFileName
    *
    * @return void
    */
-  private static function moveToArchive(string $orderFileFullPath, string $orderType, string $archiveFileName): void
+  private static function moveToArchive(string $sourceFileFullPath, string $orderType, string $archiveFileName): void
   {
-    # формируем путь до директории
-    $archiveFullPath = self::makeArchiveFullPath($orderType);
-
     # формируем полный путь до файла и выполняем перенос
-    $archiveFileFullPath = ($archiveFullPath . $archiveFileName . ".xml");
-    rename($orderFileFullPath, $archiveFileFullPath);
+    $archiveFileFullPath = self::makeArchiveFileFullPath($orderType, $archiveFileName);
+    rename($sourceFileFullPath, $archiveFileFullPath);
   }
 
 
@@ -471,12 +478,14 @@ class Names
 
 
   /**
+   * @param  string  $orderType
+   *
    * @return string
    */
-  private function getMainFileFullPath(): string
+  private static function getMainFileFullPath(string $orderType): string
   {
     $fullPath = self::makeFullPath("payed"); # директория файла
-    return ($fullPath . $this->orderType . ".xml"); # полный путь до файла
+    return ($fullPath . $orderType . ".xml"); # полный путь до файла
   }
 
 
@@ -565,8 +574,7 @@ class Names
       }
 
       # создаем архивный файл с удаленными именами
-      $archiveFolderFullPath = self::makeArchiveFullPath($type);
-      $archiveFileFullPath = ($archiveFolderFullPath . time() . ".xml");
+      $archiveFileFullPath = self::makeArchiveFileFullPath($type, time());
       self::createNamesXML($archiveFileFullPath, true, $archiveNames);
 
     }
@@ -585,6 +593,19 @@ class Names
   private static function isExpired(int $createdAt): bool
   {
     return (time() > self::getEndDate($createdAt));
+  }
+
+
+  /**
+   * @param  string  $type
+   * @param  string  $name
+   *
+   * @return string
+   */
+  private static function makeArchiveFileFullPath(string $type, string $name)
+  {
+    $archiveFolderFullPath = self::makeArchiveFullPath($type); # формируем путь до директории
+    return ($archiveFolderFullPath . $name . ".xml"); # формируем полный путь до файла
   }
 
 
