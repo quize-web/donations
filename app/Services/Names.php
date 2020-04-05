@@ -6,6 +6,7 @@ use XMLWriter;
 use app\Core\XML;
 use XMLReader;
 use DOMDocument;
+use DOMNodeList;
 
 
 class Names
@@ -62,6 +63,14 @@ class Names
       "new" => "new"
     ]
   ];
+
+
+  /**
+   * 40 дней
+   *
+   * @var integer FORTY
+   */
+  const FORTY = (60 * 60 * 24 * 41);
 
 
   /* PROPERTIES */
@@ -153,7 +162,7 @@ class Names
         $writer->writeElement("payed", "false");
         $writer->writeElement("total", $this->getTotal());
 
-        $this->writeNames($writer);
+        self::writeNamesToXML($writer, $this->names);
 
       });
     }
@@ -166,16 +175,18 @@ class Names
   public function markAsPayed(): void
   {
     $orderFileFullPath = $this->makeFileFullPath("new");
-    if (file_exists($orderFileFullPath)) { # файл заказа существует в папке с неоплаченными записками
+    if (file_exists($orderFileFullPath)) { # записка существует в папке с неоплаченными записками
 
       # считываем с него данные в свойства класса
       $this->retrieveFromXML($orderFileFullPath);
 
       # модифицируем существующи файл
-      $this->appendNamesToMainFile();
+      $mainFileFullPath = $this->getMainFileFullPath();
+      $this->appendNamesToFile($mainFileFullPath);
 
       # переносим файл записки в архив
-      $this->moveToArchive($orderFileFullPath);
+      self::moveToArchive($orderFileFullPath, $this->orderType, $this->fileName);
+//      exit(); # отладка
 
     }
   }
@@ -208,6 +219,36 @@ class Names
       $this->string = (self::TYPES[$this->orderType]["title"] . ": " . implode(", ", $this->names));
     }
     return $this->string;
+  }
+
+
+  /**
+   * @return array
+   */
+  public static function getNames(): array
+  {
+    $result = [];
+    $mainFiles = self::getMainFiles();
+    if ($mainFiles) {
+      foreach ($mainFiles as $fileFullPath) { # обходим каждый файл из папки
+        $type = basename($fileFullPath, ".xml");
+
+        $XML = new XML($fileFullPath); # открываем XML-файл
+        $XML->modify(function (DOMDocument $dom) use ($type, &$result) {
+          $namesNode = $dom->getElementsByTagName("name");
+
+          # запись[ и фильтрация] имен в массив
+          if ($type === "forty") { # Сорокоуст (с фильтрацией уже неактуальных)
+            $result[$type] = self::filterNamesXML($namesNode, $type);
+          } else { # Обычные записки
+            foreach ($namesNode as $nameNode) $result[$type][] = $nameNode->textContent;
+          }
+
+        });
+
+      }
+    }
+    return $result;
   }
 
 
@@ -271,16 +312,26 @@ class Names
 
 
   /**
-   * @param  XMLWriter  $writer
+   * @param  XMLWriter      $writer
+   * @param  array|boolean  $withDate
+   * @param  string[]       $names
    *
    * @return void
    */
-  private function writeNamesToXML(XMLWriter $writer): void
+  private static function writeNamesToXML(XMLWriter $writer, array $names, $withDate = false): void
   {
     $writer->startElement("names");
-    if ($this->names) {
-      foreach ($this->names as $name) {
-        $writer->writeElement("name", $name);
+    if ($names) {
+      foreach ($names as $name) {
+
+        if ($withDate) {
+          $writer->startElement("name");
+          $writer->writeElement("value", $name);
+          if (is_array($withDate)) $writer->writeElement(key($withDate), current($withDate));
+          else $writer->writeElement("created_at", time());
+          $writer->endElement();
+        } else $writer->writeElement("name", $name);
+
       }
     }
     $writer->endElement();
@@ -288,33 +339,64 @@ class Names
 
 
   /**
-   * @param  DOMDocument  $dom
+   * @param  string         $fileFullPath
+   * @param  array|boolean  $withDate
+   * @param  array|null     $names
    *
    * @return void
    */
-  private function appendNamesToXML(DOMDocument $dom): void
+  private static function createNamesXML(string $fileFullPath, $withDate = false, ?array $names = null): void
   {
-    $names = $dom->documentElement->getElementsByTagName("names")->item(0);
-    foreach ($this->names as $name) {
-      $node = $dom->createElement("name", $name);
-      $names->appendChild($node);
+    $XML = new XML($fileFullPath);
+    $XML->write(function (XMLWriter $writer) use ($withDate, $names) {
+      self::writeNamesToXML($writer, $names, $withDate);
+    });
+  }
+
+
+  /**
+   * @param  DOMDocument    $dom
+   * @param  array|boolean  $withDate
+   * @param  null|string[]  $names
+   *
+   * @return void
+   */
+  private function appendNamesToXML(DOMDocument $dom, $withDate = false, ?array $names = null): void
+  {
+    $namesNode = $dom->documentElement->getElementsByTagName("names")->item(0);
+    $names = ($names ?? $this->names);
+    if ($names) {
+      foreach ($names as $name) {
+
+        if ($withDate) {
+          $valueNode = $dom->createElement("value", $name);
+          if (is_array($withDate)) $createdAtNode = $dom->createElement(key($withDate), current($withDate));
+          else $createdAtNode = $dom->createElement("created_at", time());
+          $nameNode = $dom->createElement("name");
+          $nameNode->appendChild($valueNode);
+          $nameNode->appendChild($createdAtNode);
+        } else $nameNode = $dom->createElement("name", $name);
+
+        $namesNode->appendChild($nameNode);
+      }
     }
   }
 
 
   /**
    * @param  string  $orderFileFullPath
+   * @param  string  $orderType
+   * @param  string  $archiveFileName
    *
    * @return void
    */
-  private function moveToArchive(string $orderFileFullPath): void
+  private static function moveToArchive(string $orderFileFullPath, string $orderType, string $archiveFileName): void
   {
     # формируем путь до директории
-    $archiveFullPath = (self::makeFullPath("archive") . $this->getArchiveFolder() . DS);
-    if (file_exists($archiveFullPath) === false) mkdir($archiveFullPath, 0777, true);
+    $archiveFullPath = self::makeArchiveFullPath($orderType);
 
     # формируем полный путь до файла и выполняем перенос
-    $archiveFileFullPath = ($archiveFullPath . $this->fileName . ".xml");
+    $archiveFileFullPath = ($archiveFullPath . $archiveFileName . ".xml");
     rename($orderFileFullPath, $archiveFileFullPath);
   }
 
@@ -322,27 +404,27 @@ class Names
   /**
    * Вставляем список имен в общий файл
    *
+   * @param  string         $fileFullPath
+   * @param  null|string[]  $names
+   *
    * @return void
    */
-  private function appendNamesToMainFile(): void
+  private function appendNamesToFile(string $fileFullPath, ?array $names = null): void
   {
-    $fullPath = self::makeFullPath("payed"); # директория файла
-    $mainFileFullPath = ($fullPath . $this->orderType . ".xml"); # полный путь до файла
-    if (file_exists($mainFileFullPath)) {
-      # главный файл с записками существует - модифицируем его
+    $names = ($names ?? $this->names);
+    $withDate = ($this->orderType === 'forty'); # пишем дополнительно дату добавления каждого имени (для Сорокоуста)
+    if (file_exists($fileFullPath)) {
 
-      $XML = new XML($mainFileFullPath);
-      $XML->modify(function (DOMDocument $dom) {
-        $this->appendNamesToXML($dom);
+      # главный файл с записками существует - модифицируем его
+      $XML = new XML($fileFullPath);
+      $XML->modify(function (DOMDocument $dom) use ($withDate, $names) {
+        $this->appendNamesToXML($dom, $withDate, $names);
       });
 
     } else {
-      # главный файл с записками НЕ существует - создаем его
 
-      $XML = new XML($mainFileFullPath);
-      $XML->write(function (XMLWriter $writer) {
-        $this->writeNamesToXML($writer);
-      });
+      # главный файл с записками НЕ существует - создаем его
+      self::createNamesXML($fileFullPath, $withDate, $names);
 
     }
   }
@@ -370,6 +452,16 @@ class Names
 
 
   /**
+   * @return string
+   */
+  private function getMainFileFullPath(): string
+  {
+    $fullPath = self::makeFullPath("payed"); # директория файла
+    return ($fullPath . $this->orderType . ".xml"); # полный путь до файла
+  }
+
+
+  /**
    * @param  string  $type
    *
    * @return string
@@ -381,9 +473,18 @@ class Names
   }
 
 
-  private function getArchiveFolder()
+  /**
+   * @param  string  $orderType
+   *
+   * @return string
+   */
+  private static function makeArchiveFullPath(string $orderType): string
   {
-    return (date('Y-m-d') . DS . $this->orderType);
+    $archivePath = (date('Y-m-d') . DS . $orderType);
+    $archiveFullPath = (self::makeFullPath("archive") . $archivePath . DS);
+
+    if (file_exists($archiveFullPath) === false) mkdir($archiveFullPath, 0777, true);
+    return $archiveFullPath;
   }
 
 
@@ -395,6 +496,89 @@ class Names
   private static function handleNames(array $names): array
   {
     return array_filter($names);
+  }
+
+
+  /**
+   * @return array
+   */
+  private static function getMainFiles(): array
+  {
+    $fullPath = self::makeFullPath("payed");
+    return array_filter(glob($fullPath . "*.xml"));
+  }
+
+
+  /**
+   * @param  DOMNodeList  $namesNode
+   * @param  string       $type
+   *
+   * @return array
+   */
+  private static function filterNamesXML(DOMNodeList $namesNode, string $type): array
+  {
+    $result = [];
+    $archiveNodes = [];
+
+    # получение актуальных имен, фильтрация в массив не актуальных
+
+    foreach ($namesNode as $nameNode) {
+
+      $createdAt = $nameNode->getElementsByTagName('created_at')->item(0)->textContent;
+      if (self::isExpired($createdAt)) { # 40 дней прошло
+        $archiveNodes[] = $nameNode;
+        continue;
+      }
+
+      $value = $nameNode->getElementsByTagName('value')->item(0)->textContent;
+      $result[] = ["value" => $value, "created_at" => $createdAt];
+
+    }
+
+    # удаление не актуальных имен, перенос их в архив
+
+    $archiveNames = [];
+    if ($archiveNodes) { # нашли имена, 40 дней у которых прошли
+
+      foreach ($archiveNodes as $nameNode) {
+        $archiveNames[] = $nameNode->getElementsByTagName('value')->item(0)->textContent;
+        $nameNode->parentNode->removeChild($nameNode); ### удаляем имена из XML-файла
+      }
+
+      # создаем архивный файл с удаленными именами
+      $archiveFolderFullPath = self::makeArchiveFullPath($type);
+      $archiveFileFullPath = ($archiveFolderFullPath . time() . ".xml");
+      self::createNamesXML($archiveFileFullPath, true, $archiveNames);
+
+    }
+
+    #
+
+    return $result;
+  }
+
+
+  /**
+   * @param  integer  $createdAt
+   * @param  boolean  $format
+   *
+   * @return integer|string
+   */
+  private static function getEndDate(int $createdAt, bool $format = false)
+  {
+    $endData = ($createdAt + self::FORTY);
+    return ($format ? date('Y-m-d', $endData) : $endData);
+  }
+
+
+  /**
+   * @param  integer  $createdAt
+   *
+   * @return boolean
+   */
+  private static function isExpired(int $createdAt): bool
+  {
+    return (time() > self::getEndDate($createdAt));
   }
 
 

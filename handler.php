@@ -5,6 +5,7 @@ require_once("./_common.php");
 use app\Services\Yandex;
 use app\Services\Names;
 
+
 /* *** */
 
 $data = $_POST;
@@ -16,6 +17,11 @@ if ($data):
   }
 
   $yandex = new Yandex($data, ($names ?? null));
+
+  $endpoint = Yandex::ENDPOINT;
+  if ((Yandex::ENDPOINT === "/callback.php") && $names) {
+    $endpoint .= "?orderNumber={$yandex->getData()["orderNumber"]}";
+  }
 
   # редиректим на Яндекс.Кассу с POST-параметрами
   if (true):
@@ -33,7 +39,7 @@ if ($data):
       </head>
       <body onload="redirect();">
 
-      <form name="redirect" method="POST" action="<?= Yandex::ENDPOINT ?>">
+      <form name="redirect" method="POST" action="<?= $endpoint ?>">
         <?php
         if ($yandex->getData()):
           foreach ($yandex->getData() as $name => $value):

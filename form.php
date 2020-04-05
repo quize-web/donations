@@ -85,7 +85,8 @@ use app\Services\Yandex;
                     </script>
 
                     <div>
-                        <input type="submit" value="Оплатить <?= $typeData["cost"] ?>" class="btn-submit btn-submit<?= $n ?>" disabled>
+                        <?php $value = (($slug === 'donation') ? "Пожертвовать" : "Оплатить {$typeData["cost"]}"); ?>
+                        <input type="submit" value="<?= $value ?>" class="btn-submit btn-submit<?= $n ?>" disabled>
                     </div>
 
                 </form>
