@@ -33,7 +33,7 @@ use app\Services\Names;
         <?php $n = 0; ?>
         <?php foreach (Names::$TYPES as $slug => $typeData): ?>
             <div class="tab-pane fade show<?= (Names::ACTIVE_TAB === $slug) ? " active" : "" ?>" id="<?= $slug?>" role="tabpanel">
-                <form action="/handler.php" method="post" target="_blank">
+                <form action="<?= env('HOST') . "/handler.php" ?>" method="post" target="_blank">
 
                     <? if ($slug === 'donation'): ?>
                         <label>
