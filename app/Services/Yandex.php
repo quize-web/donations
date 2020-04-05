@@ -17,11 +17,17 @@ class Yandex
   const ENDPOINT = "/callback.php"; # отладка
 
   /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
    * @var integer SHOP_ID
    */
   const SHOP_ID = 25634;
 
   /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
    * @var integer SCID
    */
   const SCID = 33560;
@@ -48,6 +54,24 @@ class Yandex
   private $data = [];
 
 
+  /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
+   * @var null|integer $shopID
+   */
+  private static $shopID = null;
+
+
+  /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
+   * @var null|integer $scID
+   */
+  private static $scid = null;
+
+
   /* METHODS */
 
 
@@ -60,6 +84,38 @@ class Yandex
 
 
   ### public
+
+
+  /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
+   * @return integer|null
+   */
+  public static function getShopID(): int
+  {
+    if (self::$shopID === null) {
+      if (isset($_GET["shop-id"]) && $_GET["shop-id"]) self::$shopID = $_GET["shop-id"];
+      else self::$shopID = env("SHOP_ID", self::SHOP_ID);
+    }
+    return self::$shopID;
+  }
+
+
+  /**
+   * Приоритет от большего к меньшему:
+   * GET-параметр -> env-параметр -> константа класса
+   *
+   * @return integer|null
+   */
+  public static function getSCID(): int
+  {
+    if (self::$scid === null) {
+      if (isset($_GET["scid"]) && $_GET["scid"]) self::$scid = $_GET["scid"];
+      else self::$scid = env("SCID", self::SCID);
+    }
+    return self::$scid;
+  }
 
 
   /**

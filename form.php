@@ -36,8 +36,8 @@ use app\Services\Yandex;
             <div class="tab-pane fade show<?= (Names::DEFAULT === $slug) ? " active" : "" ?>" id="<?= $slug?>" role="tabpanel">
                 <form action="/handler.php" method="post" target="_blank">
 
-                    <input name="shopId" value="<?= Yandex::SHOP_ID ?>" type="hidden" required/>
-                    <input name="scid" value="<?= Yandex::SCID ?>" type="hidden" required/>
+                    <input name="shopId" value="<?= Yandex::getShopID() ?>" type="hidden" required/>
+                    <input name="scid" value="<?= Yandex::getSCID() ?>" type="hidden" required/>
 
                     <? if ($slug === 'donation'): ?>
                         <label>

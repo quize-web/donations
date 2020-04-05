@@ -24,5 +24,5 @@ if (false && Yandex::ENDPOINT === "/callback.php") { # отладка
 
 }
 
-//header("Location: /");
+header("Location: /");
 exit();
