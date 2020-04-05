@@ -1,7 +1,6 @@
 <?php
 require_once ("./_common.php");
 use app\Services\Names;
-use app\Services\Yandex;
 ?>
 
 <!-- ASSETS -->
@@ -35,9 +34,6 @@ use app\Services\Yandex;
         <?php foreach (Names::TYPES as $slug => $typeData): ?>
             <div class="tab-pane fade show<?= (Names::DEFAULT === $slug) ? " active" : "" ?>" id="<?= $slug?>" role="tabpanel">
                 <form action="/handler.php" method="post" target="_blank">
-
-                    <input name="shopId" value="<?= Yandex::getShopID() ?>" type="hidden" required/>
-                    <input name="scid" value="<?= Yandex::getSCID() ?>" type="hidden" required/>
 
                     <? if ($slug === 'donation'): ?>
                         <label>

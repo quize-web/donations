@@ -13,8 +13,15 @@ class Yandex
   /**
    * @var string ENDPOINT
    */
-//  const ENDPOINT = "https://money.yandex.ru/eshop.xml";
-  const ENDPOINT = "/callback.php"; # отладка
+  const ENDPOINT = "https://money.yandex.ru/eshop.xml";
+
+//  const ENDPOINT = "/callback.php"; # отладка
+
+
+  /**
+   * @var string SUCCESS
+   */
+  const SUCCESS = "callback.php";
 
   /**
    * Приоритет от большего к меньшему:
@@ -136,21 +143,57 @@ class Yandex
   private function setData(): void
   {
     $result = [
-      "shopId" => $this->rawData["shopId"],
-      "scid" => $this->rawData["scid"],
+      "shopId" => Yandex::getShopID(),
+      "scid" => Yandex::getSCID(),
       "sum" => $this->rawData["sum"],
       "orderDetails" => "Пожертвование",
       "customerNumber" => $this->rawData["customer-name"],
       "orderNumber" => ($this->rawData["customer-name"] . " --- " . time()),
+      "shopSuccessURL" => self::getDefaultURL(),
+      "shopFailURL" => self::getFailURL(),
+      "shopDefaultUrl" => self::getDefaultURL(),
     ];
 
     if ($this->names) {
       $result["sum"] = $this->names->getTotal();
       $result["orderDetails"] = $this->names->getAsString();
       $result["orderNumber"] = $this->names->getFileName();
+      $result["shopSuccessURL"] = self::getSuccessURL($this->names->getFileName());
     }
 
     $this->data = $result;
+  }
+
+
+  ### private
+
+
+  /**
+   * @param  string $orderNumber
+   *
+   * @return string
+   */
+  private static function getSuccessURL(string $orderNumber): string
+  {
+    return (env('HOST') . "/" . self::SUCCESS . "?orderNumber={$orderNumber}");
+  }
+
+
+  /**
+   * @return string
+   */
+  private static function getFailURL(): string
+  {
+    return env('HOST');
+  }
+
+
+  /**
+   * @return string
+   */
+  private static function getDefaultURL(): string
+  {
+    return env('HOST');
   }
 
 

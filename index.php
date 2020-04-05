@@ -1,5 +1,5 @@
 <?php
-//$queryString = "shop-id=333&scid=444";
+//$queryString = "shop-id=111&scid=222";
 $queryString = null;
 ?>
 
