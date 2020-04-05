@@ -10,7 +10,7 @@ class cURL
   /**
    * @var array DEFAULT_OPTIONS
    */
-  const DEFAULT_OPTIONS = [
+  public static $DEFAULT_OPTIONS = [
     CURLOPT_RETURNTRANSFER => true
   ];
 
@@ -50,7 +50,7 @@ class cURL
       CURLOPT_POST => true
     ];
     $ch = curl_init();
-    curl_setopt_array($ch, (self::DEFAULT_OPTIONS + $options));
+    curl_setopt_array($ch, (self::$DEFAULT_OPTIONS + $options));
 
     $response = curl_exec($ch);
     return $response;

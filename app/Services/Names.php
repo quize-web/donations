@@ -24,7 +24,7 @@ class Names
   /**
    * @var array TYPES
    */
-  const TYPES = [
+  public static $TYPES = [
     "health" => [
       "title" => "О Здравии",
       "count" => 10,
@@ -55,7 +55,7 @@ class Names
   /**
    * @var array FOLDERS
    */
-  const FOLDERS = [
+  public static $FOLDERS = [
     "root" => "names",
     "types" => [
       "payed" => "payed",
@@ -76,7 +76,7 @@ class Names
    *
    * @var integer FORTY
    */
-  const FORTY = (60 * 60 * 24 * 41);
+//  public static $FORTY = 60*60*24*41;
 
 
   /* PROPERTIES */
@@ -232,7 +232,7 @@ class Names
   public function getAsString()
   {
     if ($this->string === null) {
-      $this->string = (self::TYPES[$this->orderType]["title"] . ": " . implode(", ", $this->names));
+      $this->string = (self::$TYPES[$this->orderType]["title"] . ": " . implode(", ", $this->names));
     }
     return $this->string;
   }
@@ -276,7 +276,8 @@ class Names
    */
   public static function getEndDate($createdAt, $format = false)
   {
-    $endData = ($createdAt + self::FORTY);
+    $forty = 60*60*24*41; # 40 дней
+    $endData = ($createdAt + $forty);
     return ($format ? date('d.m.Y', $endData) : $endData);
   }
 
@@ -289,7 +290,7 @@ class Names
    */
   private function setValid()
   {
-    if (empty($this->names) || (array_key_exists($this->orderType, self::TYPES) === false)) {
+    if (empty($this->names) || (array_key_exists($this->orderType, self::$TYPES) === false)) {
       # если пустые имена или такого типа записок нет - ошибка
       $this->valid = false;
     }
@@ -322,8 +323,8 @@ class Names
     if ($total) $this->total = $total;
     else {
 
-      $this->total = self::TYPES[$this->orderType]["cost"];
-      if (self::TYPES[$this->orderType]["foreach"]) $this->total *= count($this->names);
+      $this->total = self::$TYPES[$this->orderType]["cost"];
+      if (self::$TYPES[$this->orderType]["foreach"]) $this->total *= count($this->names);
 
     }
   }
@@ -496,7 +497,7 @@ class Names
    */
   private static function makeFullPath($type)
   {
-    $path = implode(DS, [self::FOLDERS["root"], self::FOLDERS["types"][$type]]);
+    $path = implode(DS, [self::$FOLDERS["root"], self::$FOLDERS["types"][$type]]);
     return (DOCROOT . DS . "storage" . DS . $path . DS);
   }
 

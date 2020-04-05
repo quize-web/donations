@@ -1,5 +1,5 @@
 <?php
-require_once ("./_common.php");
+require_once ("." . DIRECTORY_SEPARATOR . "_common.php");
 use app\Services\Names;
 ?>
 
@@ -20,7 +20,7 @@ use app\Services\Names;
     <!---->
 
     <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left" role="navigation">
-        <?php foreach (Names::TYPES as $slug => $typeData): ?>
+        <?php foreach (Names::$TYPES as $slug => $typeData): ?>
             <li class="nav-item">
                 <a href="#<?= $slug ?>" class="nav-link<?= (Names::ACTIVE_TAB === $slug) ? " active" : "" ?>" data-toggle="tab" role="tab" aria-controls="lorem"><?= $typeData["title"] ?></a>
             </li>
@@ -31,7 +31,7 @@ use app\Services\Names;
 
     <div class="tab-content">
         <?php $n = 0; ?>
-        <?php foreach (Names::TYPES as $slug => $typeData): ?>
+        <?php foreach (Names::$TYPES as $slug => $typeData): ?>
             <div class="tab-pane fade show<?= (Names::ACTIVE_TAB === $slug) ? " active" : "" ?>" id="<?= $slug?>" role="tabpanel">
                 <form action="/handler.php" method="post" target="_blank">
 

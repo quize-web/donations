@@ -1,9 +1,10 @@
 <?php
 
-require_once("./_common.php");
+require_once("." . DIRECTORY_SEPARATOR . "_common.php");
 
 use app\Services\Names;
 use app\Services\Yandex;
+
 
 /* *** */
 

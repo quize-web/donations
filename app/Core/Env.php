@@ -18,7 +18,7 @@ class Env
    */
   public static function read()
   {
-    $envFileFullPath = (DOCROOT . DS . ".env");
+    $envFileFullPath = ("." . DS . ".env");
     if (file_exists($envFileFullPath) && is_null(self::$data)) {
       self::$data = [];
       foreach (explode("\n", file_get_contents($envFileFullPath)) as $row) {

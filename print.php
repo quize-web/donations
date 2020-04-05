@@ -1,13 +1,14 @@
 <?php
 
 header("Content-Type: text/html; charset=UTF-8");
-require_once("./_common.php");
+require_once("." . DIRECTORY_SEPARATOR . "_common.php");
 
 use app\Services\Names;
 
+
 if (isset($_POST["to-archive"]) && $_POST["to-archive"]) {
-    # нажали на кнопку "Удалить" - переносим файл с именам в архив
-    Names::moveMainFileToArchive($_POST["to-archive"]);
+  # нажали на кнопку "Удалить" - переносим файл с именам в архив
+  Names::moveMainFileToArchive($_POST["to-archive"]);
 }
 
 if (isset($_GET["auth"]) && ($_GET["auth"] === Names::AUTH_HASH)):
@@ -50,9 +51,10 @@ if (isset($_GET["auth"]) && ($_GET["auth"] === Names::AUTH_HASH)):
                     <div class="names__title">
                         <span>↓ </span>
                         <h2>
-                            <?php $id = "names__{$type}"; ?>
-                            <a href="#<?= $id ?>" aria-controls="<?= $id ?>" data-toggle="collapse" role="button" aria-expanded="false">
-                                <span><?= Names::TYPES[$type]["title"] ?>:</span>
+                          <?php $id = "names__{$type}"; ?>
+                            <a href="#<?= $id ?>" aria-controls="<?= $id ?>" data-toggle="collapse" role="button"
+                               aria-expanded="false">
+                                <span><?= Names::$TYPES[$type]["title"] ?>:</span>
                             </a>
                         </h2>
                       <?php if ($type === "forty"): ?>

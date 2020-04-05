@@ -9,7 +9,7 @@ if (function_exists('env') === false) {
    */
   function env($key, $default = false)
   {
-    require_once(DOCROOT . DS . "app" . DS . "Core" . DS . "Env.php");
+    require_once("." . DS . "app" . DS . "Core" . DS . "Env.php");
     return app\core\Env::get($key, $default);
   }
 }

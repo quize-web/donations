@@ -12,7 +12,7 @@ class Loader
    */
   public static function init()
   {
-    spl_autoload_register([Loader::class, "register"], true);
+    spl_autoload_register([get_called_class(), "register"], true);
   }
 
 
