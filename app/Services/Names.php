@@ -323,7 +323,10 @@ class Names
     if ($total) $this->total = $total;
     else {
 
-      $this->total = self::$TYPES[$this->orderType]["cost"];
+      $envParam = (strtoupper($this->orderType) . "_COST");
+      $cost = env($envParam, self::$TYPES[$this->orderType]["cost"]);
+
+      $this->total = $cost;
       if (self::$TYPES[$this->orderType]["foreach"]) $this->total *= count($this->names);
 
     }
