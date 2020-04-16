@@ -323,6 +323,7 @@ class Names
     if ($total) $this->total = $total;
     else {
 
+      // TODO: getCost static method (by logic below)
       $envParam = (strtoupper($this->orderType) . "_COST");
       $cost = env($envParam, self::$TYPES[$this->orderType]["cost"]);
 

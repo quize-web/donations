@@ -7,12 +7,21 @@ $queryString = null;
 
     <div>
         <iframe width="485" height="640" style="border: 0"
-                src="./form.php<?= ($queryString ? "?{$queryString}" : "") ?>"></iframe>
+                src="http://fedosino.ru/zapiski/form.php"></iframe>
     </div>
 
-    <div>
-        <iframe width="320" height="820" style="border: 0"
-                src="./form.php<?= ($queryString ? "?{$queryString}" : "") ?>"></iframe>
-    </div>
+  <?php if (false): ?>
+      <div>
+          <iframe width="485" height="640" style="border: 0"
+                  src="./form.php<?= ($queryString ? "?{$queryString}" : "") ?>"></iframe>
+      </div>
+  <?php endif; ?>
+
+  <?php if (false): ?>
+      <div>
+          <iframe width="320" height="820" style="border: 0"
+                  src="./form.php<?= ($queryString ? "?{$queryString}" : "") ?>"></iframe>
+      </div>
+  <?php endif; ?>
 
 </div>
