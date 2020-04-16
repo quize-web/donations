@@ -29,25 +29,36 @@ class Names
       "title" => "О Здравии",
       "count" => 10,
       "cost" => 180,
-      "foreach" => false
+      "foreach" => false,
+      "expires" => null
     ],
     "rest" => [
       "title" => "О Упокоении",
       "count" => 10,
       "cost" => 180,
-      "foreach" => false
+      "foreach" => false,
+      "expires" => null
     ],
     "forty" => [
       "title" => "Сорокоуст",
       "count" => 10,
       "cost" => 180,
-      "foreach" => true
+      "foreach" => true,
+      "expires" => 41
+    ],
+    "forty2" => [
+      "title" => "Сорокоуст2",
+      "count" => 10,
+      "cost" => 180,
+      "foreach" => true,
+      "expires" => 365
     ],
     "donation" => [
       "title" => "Пожертвование",
       "count" => 0,
       "cost" => 0,
-      "foreach" => false
+      "foreach" => false,
+      "expires" => null
     ]
   ];
 
@@ -209,6 +220,28 @@ class Names
 
 
   /**
+   * @param  string  $type
+   *
+   * @return boolean
+   */
+  public static function expires($type)
+  {
+    return (isset(self::$TYPES[$type]["expires"]) && (self::$TYPES[$type]["expires"] > 0));
+  }
+
+
+  /**
+   * @param  string  $type
+   *
+   * @return null|integer
+   */
+  public static function getExpires($type)
+  {
+    return (self::expires($type) ? self::$TYPES[$type]["expires"] : null);
+  }
+
+
+  /**
    * @return integer
    */
   public function getTotal()
@@ -254,7 +287,7 @@ class Names
           $namesNode = $dom->getElementsByTagName("name");
 
           # запись[ и фильтрация] имен в массив
-          if ($type === "forty") { # Сорокоуст (с фильтрацией уже неактуальных)
+          if (self::expires($type)) { # Сорокоуст (с фильтрацией уже неактуальных)
             $result[$type] = self::filterNamesXML($namesNode, $type);
           } else { # Обычные записки
             foreach ($namesNode as $nameNode) $result[$type][] = $nameNode->textContent;
@@ -270,13 +303,14 @@ class Names
 
   /**
    * @param  integer  $createdAt
+   * @param  string  $type
    * @param  boolean  $format
    *
    * @return integer|string
    */
-  public static function getEndDate($createdAt, $format = false)
+  public static function getEndDate($createdAt, $type, $format = false)
   {
-    $forty = 60*60*24*41; # 40 дней
+    $forty = 60*60*24*self::getExpires($type); # 40 дней
     $endData = ($createdAt + $forty);
     return ($format ? date('d.m.Y', $endData) : $endData);
   }
@@ -443,7 +477,7 @@ class Names
   private function appendNamesToFile($fileFullPath, $names = null)
   {
     $names = (($names === null) ? $this->names : $names);
-    $withDate = ($this->orderType === 'forty'); # пишем дополнительно дату добавления каждого имени (для Сорокоуста)
+    $withDate = (self::expires($this->orderType)); # пишем дополнительно дату добавления каждого имени (для Сорокоуста)
     if (file_exists($fileFullPath)) {
 
       # главный файл с записками существует - модифицируем его
@@ -558,7 +592,7 @@ class Names
     foreach ($namesNode as $nameNode) {
 
       $createdAt = $nameNode->getElementsByTagName('created_at')->item(0)->textContent;
-      if (self::isExpired($createdAt)) { # 40 дней прошло
+      if (self::isExpired($createdAt, $type)) { # 40 дней прошло
         $archiveNodes[] = $nameNode;
         continue;
       }
@@ -592,12 +626,13 @@ class Names
 
   /**
    * @param  integer  $createdAt
+   * @param  string  $type
    *
    * @return boolean
    */
-  private static function isExpired($createdAt)
+  private static function isExpired($createdAt, $type)
   {
-    return (time() > self::getEndDate($createdAt));
+    return (time() > self::getEndDate($createdAt, $type));
   }
 
 

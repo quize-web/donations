@@ -57,7 +57,7 @@ if (isset($_GET["auth"]) && ($_GET["auth"] === Names::AUTH_HASH)):
                                 <span><?= Names::$TYPES[$type]["title"] ?>:</span>
                             </a>
                         </h2>
-                      <?php if ($type === "forty"): ?>
+                      <?php if (Names::expires($type)): ?>
                           <p class="names__title-addition">(<i>Обновляется автоматически</i>)</p>
                       <?php else: ?>
                           <form method="POST" class="names__title-addition">
@@ -73,7 +73,7 @@ if (isset($_GET["auth"]) && ($_GET["auth"] === Names::AUTH_HASH)):
                           <?php if (is_array($name)): ?>
                                 <li>
                                     <span><?= $name["value"] ?></span>
-                                    <span class="names__list-item-description"> (до <?= Names::getEndDate($name["created_at"], true) ?>)</span>
+                                    <span class="names__list-item-description"> (до <?= Names::getEndDate($name["created_at"], $type, true) ?>)</span>
                                 </li>
                           <?php else: ?>
                                 <li>
